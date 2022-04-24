@@ -19,6 +19,6 @@ func ConnectToDatabase() {
 		fmt.Println("Error when connecting to database")
 		panic(err)
 	}
-	fmt.Println("Connection to DB estabislhed!")
+	fmt.Println("Connection to DB established!")
 	dbInstance = db
 }
