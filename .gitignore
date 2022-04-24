@@ -1,0 +1,9 @@
+#db
+*.db
+
+# IDE (VSCode)
+.vscode/
+.idea/
+
+#exec files
+*.exe
