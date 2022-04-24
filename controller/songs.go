@@ -7,73 +7,71 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetAllSongs(c *gin.Context) {
-	queryResult, errFound := dbInstance.Query(" SELECT genres.name AS genre, songs.length, songs.song, songs.artist " +
-		" FROM songs " +
-		" INNER JOIN genres " +
-		" ON genres.id = songs.ID ")
+// CONSTANTS //
 
-	if errFound != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-		return
+//This is what the JSON will contain as a field denominated 'error'
+const errorMessage = "Problem Retrieving Songs"
+
+// QueryString used in some functions to select elements with join
+const selectSongsQuery = " SELECT genres.name AS genre, songs.length, songs.song, songs.artist " +
+	" FROM songs " +
+	" INNER JOIN genres " +
+	" ON genres.id = songs.ID "
+
+// FUNCTIONS //
+
+// This will send an HTTP indicating an error ocurred
+func handleErrors(queryError error, c *gin.Context) {
+	if queryError != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 	}
+	return
+}
+
+func GetAllSongs(c *gin.Context) {
+	queryResult, queryError := dbInstance.Query(selectSongsQuery)
+
+	handleErrors(queryError, c)
 	songs := make([]model.Song, 0)
 
 	for queryResult.Next() {
 		song := model.Song{}
-		errFound = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
-		if errFound != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-		}
+		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
+		handleErrors(queryError, c)
 		songs = append(songs, song)
 
 	}
 
-	errFound = queryResult.Err()
+	queryError = queryResult.Err()
 
-	if errFound != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-	}
+	handleErrors(queryError, c)
 
 	if songs == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": songs})
 }
-
 func GetSongsByArtist(c *gin.Context) {
-	queryResult, errFound := dbInstance.Query("SELECT genres.name AS genre, songs.length, songs.song, songs.artist " +
-		" FROM songs " +
-		" INNER JOIN genres " +
-		" ON genres.id = songs.ID " + " WHERE songs.artist = '" + c.Param("artist") + "'")
+	queryResult, queryError := dbInstance.Query(selectSongsQuery + " WHERE songs.artist = '" + c.Param("artist") + "'")
 
-	if errFound != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-		return
-	}
+	handleErrors(queryError, c)
 	songs := make([]model.Song, 0)
 
 	for queryResult.Next() {
 		song := model.Song{}
-		errFound = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
-		if errFound != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-			return
-		}
+		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
+		handleErrors(queryError, c)
 		songs = append(songs, song)
 
 	}
 
-	errFound = queryResult.Err()
-	if errFound != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
-		return
-	}
+	queryError = queryResult.Err()
+	handleErrors(queryError, c)
 
 	if songs == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Problem retrieving songs data"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return
 	}
 
