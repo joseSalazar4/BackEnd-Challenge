@@ -53,6 +53,7 @@ func GetAllSongs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": songs})
 }
+
 func GetSongsByArtist(c *gin.Context) {
 	queryResult, queryError := dbInstance.Query(selectSongsQuery + " WHERE songs.artist = '" + c.Param("artist") + "'")
 
@@ -64,7 +65,54 @@ func GetSongsByArtist(c *gin.Context) {
 		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
 		handleErrors(queryError, c)
 		songs = append(songs, song)
+	}
 
+	queryError = queryResult.Err()
+	handleErrors(queryError, c)
+
+	if songs == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": songs})
+}
+
+func GetSongsBySongName(c *gin.Context) {
+	queryResult, queryError := dbInstance.Query(selectSongsQuery + " WHERE songs.song = '" + c.Param("nameSearched") + "'")
+
+	handleErrors(queryError, c)
+	songs := make([]model.Song, 0)
+
+	for queryResult.Next() {
+		song := model.Song{}
+		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
+		handleErrors(queryError, c)
+		songs = append(songs, song)
+
+	}
+
+	queryError = queryResult.Err()
+	handleErrors(queryError, c)
+
+	if songs == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": songs})
+}
+func GetSongsByGenre(c *gin.Context) {
+	queryResult, queryError := dbInstance.Query(selectSongsQuery + " WHERE genres.name = '" + c.Param("genre") + "'")
+
+	handleErrors(queryError, c)
+	songs := make([]model.Song, 0)
+
+	for queryResult.Next() {
+		song := model.Song{}
+		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song, &song.Artist)
+		handleErrors(queryError, c)
+		songs = append(songs, song)
 	}
 
 	queryError = queryResult.Err()
