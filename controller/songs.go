@@ -3,6 +3,7 @@ package controller
 import (
 	"example/ProyectoLTV/model"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -55,7 +56,7 @@ func GetSongsByArtist(c *gin.Context) {
 }
 
 func GetSongsBySongName(c *gin.Context) {
-	queryResult, queryError := dbInstance.Query(selectSongsQuery+" WHERE songs.song = ?", c.Param("artist"))
+	queryResult, queryError := dbInstance.Query(selectSongsQuery+" WHERE songs.song = ?", c.Param("nameSearched"))
 
 	handleErrors(queryError, c)
 	songs := make([]model.Song, 0)
@@ -70,7 +71,7 @@ func GetSongsBySongName(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": songs})
 }
 func GetSongsByGenre(c *gin.Context) {
-	queryResult, queryError := dbInstance.Query(selectSongsQuery+" WHERE genres.name = ?", c.Param("artist"))
+	queryResult, queryError := dbInstance.Query(selectSongsQuery+" WHERE genres.name = ?", c.Param("genre"))
 
 	handleErrors(queryError, c)
 	songs := make([]model.Song, 0)
@@ -84,19 +85,28 @@ func GetSongsByGenre(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": songs})
 }
 func GetSongsByLength(c *gin.Context) {
-	var minLength = c.Query("minLen")
-	var maxLength = c.Query("maxLen")
+	var minLengthStr = c.Query("minLen")
+	var maxLengthStr = c.Query("maxLen")
 
 	//Check if the params exist
-	if maxLength == "" && minLength == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+	if maxLengthStr == "" || minLengthStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or two parameters are blank"})
 		return
 	}
 
-	queryResult, queryError := dbInstance.Query("SELECT songs.song, songs.length " +
-		" FROM songs " +
-		" WHERE songs.length > ? AND songs.length < ? " +
-		" ORDER BY songs.length")
+	var minLength, errMinLen = strconv.Atoi(minLengthStr)
+	var maxLength, errMaxLen = strconv.Atoi(maxLengthStr)
+
+	//Check if the params were actually numbers
+	if errMinLen != nil || errMaxLen != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "One or two parameters are not numbers"})
+		return
+	}
+
+	queryResult, queryError := dbInstance.Query("SELECT songs.song, songs.length "+
+		" FROM songs "+
+		" WHERE songs.length > ? AND songs.length < ? "+
+		" ORDER BY songs.length", minLength, maxLength)
 
 	handleErrors(queryError, c)
 	songs := make([]model.Song, 0)
@@ -105,6 +115,7 @@ func GetSongsByLength(c *gin.Context) {
 		song := model.Song{}
 		queryError = queryResult.Scan(&song.Song, &song.Length)
 		handleErrors(queryError, c)
+
 		songs = append(songs, song)
 	}
 	c.JSON(http.StatusOK, gin.H{"data": songs})
