@@ -152,3 +152,30 @@ func GetSongsByLength(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": songs})
 }
+func GetSongsStatsSortedByGenre(c *gin.Context) {
+	queryResult, queryError := dbInstance.Query("SELECT genres.name AS genre, SUM(songs.length), COUNT(songs.song)" +
+		" FROM songs " +
+		" INNER JOIN genres " +
+		" ON genres.id = songs.ID " +
+		" GROUP BY genres.name ")
+
+	handleErrors(queryError, c)
+	songs := make([]model.Song, 0)
+
+	for queryResult.Next() {
+		song := model.Song{}
+		queryError = queryResult.Scan(&song.Genre, &song.Length, &song.Song)
+		handleErrors(queryError, c)
+		songs = append(songs, song)
+	}
+
+	queryError = queryResult.Err()
+	handleErrors(queryError, c)
+
+	if songs == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": songs})
+}

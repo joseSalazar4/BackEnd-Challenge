@@ -19,7 +19,7 @@ func main() {
 	router.GET("/songsByLength", controller.GetSongsByLength)
 	router.GET("/songsByGenre/:genre", controller.GetSongsByGenre)
 	router.GET("/songsByArtist/:artist", controller.GetSongsByArtist)
-	//router.GET("/songsSortedByGenre", controller.GetSongsStatsSortedByGenre) TODO: create method logic
+	router.GET("/songsSortedByGenre", controller.GetSongsStatsSortedByGenre)
 	router.GET("/songsBySongName/:nameSearched", controller.GetSongsBySongName)
 
 	// Start Listening! Port: 8080
