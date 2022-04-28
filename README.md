@@ -53,10 +53,10 @@ Everything was working by then, but the code was prone to SQL Injection which se
 
 ## Setup
 To setup the environment to get the application working these are the following steps:
-1. Download GO: https://go.dev/doc/install and install a GCC compiler. No links are provided since it depends on OS
-2. Clone the following Repo: https://github.com/joseSalazar4/BackEnd-Challenge
-3. Once cloned you will notice the DB is not be available. Please ask your manager to get you a copy of it and change its name to this exactly: "songsDatabaseLTV.db"
-4. The project is now almost ready to be executed!
+1. Download GO: https://go.dev/doc/install and install a GCC compiler. Here you can find TDM-GCC: https://jmeubank.github.io/tdm-gcc/ which is what I used in Windows 10. Linux already comes with GCC, to check if you have it properly installed open a terminal and type: gcc --version and it should display some information.
+3. Clone the following Repo: https://github.com/joseSalazar4/BackEnd-Challenge
+4. Once cloned you will notice the DB is not be available. Please ask your manager to get you a copy of it and change its name to this exactly: "songsDatabaseLTV.db"
+5. The project is now almost ready to be executed!
 
 ## Installation
 Now open a terminal inside the folder and do the following commands inside of it.
